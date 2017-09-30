@@ -1224,6 +1224,9 @@ class GuildManager:
 
             self.guilds.append(guild)
 
+            for channel in guild.channels:
+                channel.guild = guild
+
             guild_count += 1
 
         log.info('[guild] Loaded %d guilds', guild_count)
