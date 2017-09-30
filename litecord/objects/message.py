@@ -1,5 +1,6 @@
 import datetime
 import logging
+import re
 
 from .base import LitecordObject
 from .member import Member
@@ -8,6 +9,8 @@ from ..utils import dt_to_json
 from ..enums import MessageType
 
 log = logging.getLogger(__name__)
+
+MENTION = re.compile(r'<@\d+>')
 
 
 class Message(LitecordObject):
@@ -43,13 +46,15 @@ class Message(LitecordObject):
         Message content.
     edited_at: `datetime.datetime`
         Default is :py:const:`None`.
-        If the message was edited, this is set to the time at which this message was edited.
+        If the message was edited, this is set to the time at
+        which this message was edited.
     pinned: bool
         If the message is pinned in the channel.
     """
 
-    __slots__ = ('_raw', 'id', 'author_id', 'channel_id', 'timestamp', 'channel',
-        'author', 'member', 'content', 'edited_at')
+    __slots__ = ('_raw', 'id', 'author_id', 'channel_id',
+                 'timestamp', 'channel',
+                 'author', 'member', 'content', 'edited_at')
 
     def __init__(self, server, channel, author, raw):
         super().__init__(server)
@@ -79,8 +84,8 @@ class Message(LitecordObject):
         self.edited_timestamp = raw.get('edited_timestamp')
 
         if self.edited_timestamp is not None:
-            self.edited_at = datetime.datetime.strptime(self.edited_timestamp, \
-                "%Y-%m-%dT%H:%M:%S.%f")
+            self.edited_at = datetime.datetime.strptime(self.edited_timestamp,
+                                                        "%Y-%m-%dT%H:%M:%S.%f")
 
     def __repr__(self):
         return f'<Message id={self.id} pinned={self.pinned} author={self.author}>'
@@ -114,8 +119,20 @@ class Message(LitecordObject):
     @property
     def as_json(self):
         # TODO: mention detection
+        allmatch = MENTION.finditer(self.content)
         mentions = []
         mention_roles = []
+
+        for match in allmatch:
+            try:
+                uid = match.group(1)
+                uid = int(uid)
+            except ValueError:
+                continue
+
+            user = self.server.get_user(uid)
+            if user:
+                mentions.append(user.as_json)
 
         # TODO: attachments
         attachments = []
@@ -142,6 +159,6 @@ class Message(LitecordObject):
             'reactions': reactions,
             'pinned': self.pinned,
             'type': self.type,
-            #'webhook_id': '',
+            # 'webhook_id': '',
             'nonce': self.nonce,
         }
