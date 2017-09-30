@@ -88,6 +88,8 @@ class GuildManager:
             channel.last_message_id = m_id
 
         asyncio.ensure_future(_updater())
+
+        channel.guild = self.get_guild(channel.guild_id)
         return channel
 
     def get_role(self, role_id: int):
@@ -1223,9 +1225,6 @@ class GuildManager:
                 log.info('Updated %d from guild request', r.modified_count)
 
             self.guilds.append(guild)
-
-            for channel in guild.channels.values():
-                channel.guild = guild
 
             guild_count += 1
 
