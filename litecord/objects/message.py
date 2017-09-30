@@ -119,9 +119,9 @@ class Message(LitecordObject):
     @property
     def as_json(self):
         # TODO: mention detection
-        allmatch = MENTION.finditer(self.content)
         mentions = []
         mention_roles = []
+        """allmatch = MENTION.finditer(self.content)
 
         for match in allmatch:
             try:
@@ -133,6 +133,7 @@ class Message(LitecordObject):
             user = self.server.get_user(uid)
             if user:
                 mentions.append(user.as_json)
+        """
 
         # TODO: attachments
         attachments = []
