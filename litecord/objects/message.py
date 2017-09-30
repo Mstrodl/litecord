@@ -10,7 +10,7 @@ from ..enums import MessageType
 
 log = logging.getLogger(__name__)
 
-MENTION = re.compile(r'<@\d+>')
+MENTION = re.compile(r'<@(\d+)>')
 
 
 class Message(LitecordObject):
@@ -121,11 +121,10 @@ class Message(LitecordObject):
         # TODO: mention detection
         mentions = []
         mention_roles = []
-        """allmatch = MENTION.finditer(self.content)
+        uids = MENTION.findall(self.content)
 
-        for match in allmatch:
+        for uid in uids:
             try:
-                uid = match.group(1)
                 uid = int(uid)
             except ValueError:
                 continue
@@ -133,7 +132,6 @@ class Message(LitecordObject):
             user = self.server.get_user(uid)
             if user:
                 mentions.append(user.as_json)
-        """
 
         # TODO: attachments
         attachments = []
