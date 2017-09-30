@@ -1224,7 +1224,7 @@ class GuildManager:
 
             self.guilds.append(guild)
 
-            for channel in guild.channels:
+            for channel in guild.channels.values():
                 channel.guild = guild
 
             guild_count += 1
