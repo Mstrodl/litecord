@@ -1,0 +1,30 @@
+{
+    "server_url": "localhost:8000",
+    "server": {
+        "http": ["", 8000, "localhost"],
+        "ws": ["", 12000, "localhost"],
+        "voice_ws": ["", 6969, "localhost"]
+    },
+    "ratelimits": {
+        "rest": true,
+        "ws": true,
+
+        "global_ws": [120, 60],
+        "global_rest": [50, 1]
+    },
+    "images": {
+        "local": true
+    },
+    "boilerplate.update": {
+        "user": false,
+        "guild": false,
+        "channel": false,
+        "role": false
+    },
+    "mongo_name": "litecord",
+    "ssl": {
+        "on": false,
+        "certfile": "",
+        "keyfile": ""
+    }
+}
