@@ -142,7 +142,8 @@ class ChannelsEndpoint:
             part = await reader.next()
 
             part_data = await part.read()
-            log.debug('part_data: %r', part_data)
+
+            log.debug('part_data: %r', part_data[:200])
             try:
                 log.info('try json')
                 payload = json.loads(part_data)
