@@ -36,6 +36,8 @@ class Images:
         self.image_db = server.litecord_db['images']
         self.attach_db = server.litecord_db['attachments']
 
+        self.cache = {}
+
     async def _load(self):
         self.cache = {}
 
@@ -68,12 +70,15 @@ class Images:
         data_hash = hashlib.sha256(dec_data).hexdigest()
         log.info(f'Inserting {len(dec_data)}-bytes image.')
 
-        await self.image_db.insert_one({
+        image = {
             'type': img_type,
             'hash': data_hash,
             'data': encoded_data,
             'metadata': metadata,
-        })
+        }
+
+        await self.image_db.insert_one(image)
+        self.cache[data_hash] = image
 
         return data_hash
 
@@ -95,6 +100,19 @@ class Images:
     async def raw_image_get(self, img_hash):
         img = await self.image_db.find_one({'type': 'attachment',
                                             'hash': img_hash})
+        if not img:
+            return
+
+        # TODO: remove hardcoding
+        meta = img['metadata']
+        meta['url'] = f'https://litecord.adryd.com/images/{img_hash}/{meta["filename"]}'
+        return img
+
+    def force_get_cache(self, img_hash):
+        img = self.cache.get(img_hash)
+        if not img:
+            return
+
         # TODO: remove hardcoding
         meta = img['metadata']
         meta['url'] = f'https://litecord.adryd.com/images/{img_hash}/{meta["filename"]}'
