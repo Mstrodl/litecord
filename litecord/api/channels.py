@@ -145,7 +145,8 @@ class ChannelsEndpoint:
                 break
 
             part_data = await part.read()
-
+            log.info('part name %r', part.name)
+            log.info('part filename: %r', part.filename)
             log.debug('part_data: %r', str(part_data)[:200])
             try:
                 log.info('try json')
