@@ -154,7 +154,7 @@ class ChannelsEndpoint:
             except (json.JSONDecodeError, UnicodeDecodeError):
                 log.exception('oof on json, understanding as an attachment')
                 # attachment, total = await self.read_attach(attachment, part)
-                attachment = io.StringIO(part_data)
+                attachment = io.BytesIO(part_data)
                 total += len(part_data)
 
                 log.info('[getattach] attachment = %r, total = %d',
