@@ -106,6 +106,22 @@ class ChannelsEndpoint:
         self.server.loop.create_task(self.server.presence.typing_start(user.id, channel.id))
         return web.Response(status=204)
 
+    async def read_attachment(self, part):
+        log.info('reading attachment from part')
+        attachment = io.BytesIO()
+        total = 0
+
+        while True:
+            chunk = await part.read_chunk()
+            if not chunk:
+                break
+            total += len(chunk)
+            attachment.write(chunk)
+
+        log.info('got attachment')
+
+        return attachment, total
+
     async def get_attachments(self, request) -> dict:
         """Get a single attachment from a request."""
         try:
@@ -116,26 +132,25 @@ class ChannelsEndpoint:
 
         payload = None
         attachment = None
+        attachment_metadata = {}
+        total = 0
 
-        try:
-            log.info('trying to json')
-            payload = await reader.json()
-            log.info('success json')
-        except:
-            log.exception('oof')
-
-            sent_attachment = await reader.next()
-            attachment = io.BytesIO()
-
-            total = 0
-            while True:
-                chunk = await sent_attachment.read_chunk()
-                if not chunk:
-                    break
-                total += len(chunk)
-                attachment.write(chunk)
-
-            log.info('got attachment')
+        while True:
+            part = await reader.next()
+            try:
+                log.info('try json')
+                payload = await part.json()
+                log.info('success json')
+            except:
+                log.exception('oof on json')
+                attachment, total = await self.read_attach(part)
+                log.info('[getattach] attachment = %r, total = %d',
+                         attachment, total)
+                if attachment:
+                    attachment_metadata = {
+                        'filename': part.filename,
+                        'size': total
+                    }
 
         if total < 2:
             log.info('not enough bytes in attachment')
@@ -143,10 +158,7 @@ class ChannelsEndpoint:
 
         log.info('got %d bytes', total)
         return {
-            'meta': {
-                'filename': sent_attachment.filename,
-                'size': total,
-            },
+            'meta': attachment_metadata,
             'data': attachment,
         }, payload
 
