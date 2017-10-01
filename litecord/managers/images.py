@@ -42,7 +42,7 @@ class Images:
     async def _unload(self):
         del self.cache
 
-    async def raw_add_image(self, data, img_type='avatar'):
+    async def raw_add_image(self, data, img_type='avatar', metadata=None):
         """Add an image.
 
         Returns a string, representing the image hash.
@@ -72,6 +72,7 @@ class Images:
             'type': img_type,
             'hash': data_hash,
             'data': encoded_data,
+            'metadata': metadata,
         })
 
         return data_hash

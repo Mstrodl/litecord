@@ -67,6 +67,8 @@ class Message(LitecordObject):
         self.edited_at = None
         self.embeds = []
 
+        self.attachments = []
+
         self._update(channel, author, raw)
 
     def _update(self, channel, author, raw):
@@ -86,6 +88,16 @@ class Message(LitecordObject):
         if self.edited_timestamp is not None:
             self.edited_at = datetime.datetime.strptime(self.edited_timestamp,
                                                         "%Y-%m-%dT%H:%M:%S.%f")
+
+        # load attachment data
+        attachments = raw.get('attachments', [])
+        for ihash in attachments:
+            image = await self.server.image.image_retrieve(ihash)
+            if not image:
+                continue
+
+            # TODO THIS
+            self.attachments.append(Attachment(image))
 
     def __repr__(self):
         return f'<Message id={self.id} pinned={self.pinned} author={self.author}>'
@@ -133,9 +145,6 @@ class Message(LitecordObject):
             if user:
                 mentions.append(user.as_json)
 
-        # TODO: attachments
-        attachments = []
-
         # TODO?: reactions
         reactions = []
 
@@ -153,7 +162,7 @@ class Message(LitecordObject):
             'mentions': mentions,
             'mention_roles': mention_roles,
 
-            'attachments': attachments,
+            'attachments': self.attachments,
             'embeds': self.embeds,
             'reactions': reactions,
             'pinned': self.pinned,
@@ -161,3 +170,36 @@ class Message(LitecordObject):
             # 'webhook_id': '',
             'nonce': self.nonce,
         }
+
+
+class Attachment:
+    """Attachment object."""
+    def __init__(self, raw):
+        self.id = raw['hash']
+        self.data = raw['data']
+        self.filename = raw['metadata']['filename']
+
+        self.size = raw['metadata']['size']
+        self.url = raw['metadata']['url']
+        # TODO: proxy
+        self.proxy_url = raw['metadata']['url']
+
+        # hardcoded yes i know
+        self.dimensions = (800, 600)
+
+    @property
+    def as_json(self):
+        raw = {
+            'id': self.id,
+
+            'filename': self.filename,
+            'url': self.url,
+            'proxy_url': self.proxy_url,
+            'size': self.size,
+
+            # oof
+            'height': self.dimensions[0],
+            'width': self.dimensions[1]
+        }
+
+        return raw

@@ -1,22 +1,21 @@
-import json
 import logging
 import time
-import collections
+import io
 
 from aiohttp import web
-from voluptuous import Schema, Optional, All, Length, Range, REMOVE_EXTRA
+from voluptuous import Schema, Optional, All, Length, Range
 
 from ..utils import _err, _json
 from ..snowflake import get_snowflake, snowflake_time
-from ..ratelimits import ratelimit
+# from ..ratelimits import ratelimit
 from ..decorators import auth_route
-from ..snowflake import get_snowflake
 from ..objects import BaseTextChannel, BaseVoiceChannel
 
 log = logging.getLogger(__name__)
 
 # 2 weeks
 BULK_DELETE_LIMIT = 1209600
+
 
 class ChannelsEndpoint:
     """Handle channel/message related endpoints."""
@@ -107,6 +106,32 @@ class ChannelsEndpoint:
         self.server.loop.create_task(self.server.presence.typing_start(user.id, channel.id))
         return web.Response(status=204)
 
+    async def get_attachments(self, request) -> dict:
+        """Get a single attachment from a request."""
+        reader = await request.mutipart()
+        sent_attachment = await reader.next()
+
+        attachment = io.BytesIO()
+
+        total = 0
+        while True:
+            chunk = await sent_attachment.read_chunk()
+            if not chunk:
+                break
+            total += len(chunk)
+            attachment.write(chunk)
+
+        if total < 2:
+            return None
+
+        return {
+            'meta': {
+                'filename': sent_attachment.filename,
+                'size': total,
+            },
+            'data': attachment,
+        }
+
     @auth_route
     async def h_post_message(self, request, user):
         """`POST /channels/{channel_id}/messages/`.
@@ -131,13 +156,17 @@ class ChannelsEndpoint:
 
         try:
             content = str(payload['content'])
-            if len(content) < 1:
-                return _err(errno=50006)
-
-            if len(content) > 2000:
-                return web.Response(status=400)
         except:
             return _err('no useful content provided')
+
+        # check attachments
+        attachment = await self.get_attachments(request)
+
+        if len(content) < 1 and (not attachment):
+            return _err(errno=50006)
+
+        if len(content) > 2000:
+            return web.Response(status=400)
 
         _data = {
             'message_id': get_snowflake(),
@@ -146,6 +175,15 @@ class ChannelsEndpoint:
             'content': content,
             'nonce': payload.get('nonce'),
         }
+
+        if attachment:
+            # do image shit here
+            data = attachment['data']
+            image_hash = await self.server.images.raw_add_image(
+                data, 'attachment',
+                attachment['meta']
+            )
+            _data['attachments'] = [image_hash]
 
         new_message = await self.guild_man.new_message(channel, user, _data)
         return _json(new_message.as_json)
