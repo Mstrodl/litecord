@@ -115,6 +115,8 @@ class ChannelsEndpoint:
             chunk = await part.read_chunk()
             if not chunk:
                 break
+            log.debug('chunk: %r', chunk)
+
             total += len(chunk)
             attachment.write(chunk)
 
@@ -142,10 +144,13 @@ class ChannelsEndpoint:
 
             try:
                 log.info('try json')
+                if payload:
+                    log.info('We already got payload.')
+                    raise Exception('payload already exists')
                 payload = await part.json()
-                log.info('success json')
+                log.info('success json, %r', payload)
             except:
-                log.exception('oof on json')
+                log.exception('oof on json, reading attachment')
                 attachment, total = await self.read_attach(part)
                 log.info('[getattach] attachment = %r, total = %d',
                          attachment, total)
