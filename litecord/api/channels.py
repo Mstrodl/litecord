@@ -107,25 +107,6 @@ class ChannelsEndpoint:
         self.server.loop.create_task(self.server.presence.typing_start(user.id, channel.id))
         return web.Response(status=204)
 
-    async def read_attach(self, attachment, part):
-        log.info('reading attachment from part')
-        if not attachment:
-            attachment = io.BytesIO()
-        total = 0
-
-        while True:
-            chunk = await part.read_chunk()
-            if not chunk:
-                break
-            log.debug('chunk: %r', chunk[:1])
-
-            total += len(chunk)
-            attachment.write(chunk)
-
-        log.info('got attachment')
-
-        return attachment, total
-
     async def get_attachments(self, request) -> dict:
         """Get a single attachment from a request."""
         try:
@@ -134,11 +115,7 @@ class ChannelsEndpoint:
             log.info('failed to multipart')
             return None, None
 
-        payload = {}
-        attachment = None
-        attachment_metadata = {}
-        total = 0
-
+        payload = {'raw_attachment': None}
         while not reader.at_eof():
             part = await reader.next()
             if not part:
@@ -159,26 +136,13 @@ class ChannelsEndpoint:
                 log.info('key %r -> data %r', part.name, json_data)
             else:
                 log.exception('got an attachment')
-                attachment = io.BytesIO(part_data)
-                total += len(part_data)
+                payload['raw_attachment'] = [part.filename,
+                                             io.BytesIO(part_data),
+                                             len(part_data)]
 
-                log.info('[getattach] attachment = %r, total = %d',
-                         attachment, total)
-                if attachment:
-                    attachment_metadata = {
-                        'filename': part.filename,
-                        'size': total
-                    }
+                log.info('[getattach] attach = %r', payload['raw_attachment'])
 
-        if total < 2:
-            log.info('not enough bytes in attachment')
-            return None, payload
-
-        log.info('got %d bytes', total)
-        return {
-            'meta': attachment_metadata,
-            'data': attachment,
-        }, payload
+        return payload
 
     @auth_route
     async def h_post_message(self, request, user):
@@ -198,9 +162,10 @@ class ChannelsEndpoint:
             return _err(errno=40001)
 
         # check attachments
-        attachment, payload = await self.get_attachments(request)
+        payload = await self.get_attachments(request)
+        attachment = payload['raw_attachment']
 
-        log.debug('[attach] a=%r p=%r', str(attachment)[:10], payload)
+        log.debug('[attach] %r', payload)
         if not attachment:
             try:
                 payload = await request.json()
@@ -224,15 +189,16 @@ class ChannelsEndpoint:
             'nonce': payload.get('nonce'),
         }
 
-        if True:
-            return _err('fuck you')
-
         if attachment:
             # do image shit here
             data = attachment['data']
+            data = attachment[1]
             image_hash = await self.server.images.raw_add_image(
                 data, 'attachment',
-                attachment['meta']
+                {
+                    'filename': attachment[0],
+                    'size': attachment[2],
+                }
             )
             _data['attachments'] = [image_hash]
 
