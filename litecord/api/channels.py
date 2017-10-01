@@ -143,7 +143,7 @@ class ChannelsEndpoint:
 
             part_data = await part.read()
 
-            log.debug('part_data: %r', part_data[:200])
+            log.debug('part_data: %r', str(part_data)[:200])
             try:
                 log.info('try json')
                 payload = json.loads(part_data)
@@ -189,7 +189,7 @@ class ChannelsEndpoint:
         # check attachments
         attachment, payload = await self.get_attachments(request)
 
-        log.debug('[attach:payload] %r %r', attachment, payload)
+        log.debug('[attach:payload] %r %r', str(attachment)[:10], payload)
         if not attachment:
             try:
                 payload = await request.json()
