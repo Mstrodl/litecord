@@ -108,9 +108,12 @@ class ChannelsEndpoint:
 
     async def get_attachments(self, request) -> dict:
         """Get a single attachment from a request."""
-        reader = await request.mutipart()
-        sent_attachment = await reader.next()
+        try:
+            reader = await request.mutipart()
+        except AttributeError:
+            return None
 
+        sent_attachment = await reader.next()
         attachment = io.BytesIO()
 
         total = 0
