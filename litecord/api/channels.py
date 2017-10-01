@@ -141,8 +141,8 @@ class ChannelsEndpoint:
         while not reader.at_eof():
             part = await reader.next()
 
-            part_data = await part.form()
-            log.debug(part_data)
+            part_data = await part.read()
+            log.debug('part_data: %r', part_data)
             try:
                 log.info('try json')
                 payload = json.loads(part_data)
