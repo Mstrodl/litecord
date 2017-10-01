@@ -2,6 +2,8 @@ import logging
 import base64
 import hashlib
 
+import motor.motor_asyncio as motor
+
 from ..err import ImageError
 
 log = logging.getLogger(__name__)
@@ -19,6 +21,7 @@ def extract_uri(data):
         data_string = sp[0]
         encoded_data = sp[1]
         mimetype = data_string.split(';')[0].split(':')[1]
+        mimetype = (mimetype, mimetype.split('/')[1])
     except:
         raise ImageError('error decoding image data')
 
@@ -32,11 +35,8 @@ class Images:
     """
     def __init__(self, server):
         self.server = server
-
-        self.image_db = server.litecord_db['images']
-        self.attach_db = server.litecord_db['attachments']
-
-        self.cache = {}
+        self.fs = motor.AsyncIOMotorGridFSBucket(
+            self.server.litecord_db)
 
     async def _load(self):
         self.cache = {}
@@ -44,80 +44,61 @@ class Images:
     async def _unload(self):
         del self.cache
 
-    async def raw_add_image(self, data, img_type='avatar', metadata={}):
-        """Add an image.
-
-        Returns a string, representing the image hash.
-        The image hash can be used in `Images.image_retrieve` to get
-        raw binary data.
-        """
-
+    async def raw_add_image(self, image_data, img_type='avatar', metadata={}):
         try:
-            encoded_data, mimetype = extract_uri(data)
+            encoded_str, mimetype = extract_uri(image_data)
         except ImageError as err:
             raise err
 
+        if img_type == 'avatar' and mimetype[0] not in AVATAR_MIMETYPES:
+            raise ImageError(f'Invalid mimetype {mimetype!r}')
+
+        # check for base64 validity of data
         try:
-            AVATAR_MIMETYPES.index(mimetype)
+            raw_bytes = base64.b64decode(encoded_str)
         except:
-            raise ImageError(f'Invalid MIME type {mimetype!r}')
+            raise ImageError('Error decoding base64 data')
 
-        try:
-            dec_data = base64.b64decode(encoded_data)
-        except:
-            log.exception('error decoding base64')
-            raise ImageError('Error decoding Base64 data')
+        img_hash = hashlib.sha256(raw_bytes).hexdigest()
+        log.info('got %d bytes to insert, hash:%s',
+                 len(raw_bytes), img_hash)
 
-        data_hash = hashlib.sha256(dec_data).hexdigest()
-        log.info(f'Inserting {len(dec_data)}-bytes image.')
+        image_metadata = {**{
+            # img_hash is a str
+            'hash': img_hash,
 
-        image = {
+            # img_type is also a str
             'type': img_type,
-            'hash': data_hash,
-            'data': dec_data.decode(),
-            'metadata': metadata,
-        }
 
-        await self.image_db.insert_one(image)
-        self.cache[data_hash] = image
+            'mimetype': mimetype[0],
+            'extension': mimetype[1],
 
-        return data_hash
+        }, **metadata}
 
-    async def avatar_register(self, avatar_data):
-        """Registers an avatar in the avatar database."""
-        return (await self.raw_add_image(avatar_data))
+        await self.fs.upload_from_stream(
+            filename=image_metadata['filename'],
+            source=raw_bytes,
+            metadata=image_metadata
+        )
 
-    async def add_attachment(self, data):
-        return (await self.raw_add_image(data, 'attachment'))
+        return img_hash
 
-    async def avatar_retrieve(self, avatar_hash):
-        img = await self.image_db.find_one({'type': 'avatar',
-                                            'hash': avatar_hash})
-        try:
-            return img.get('data')
-        except:
-            return None
+    async def raw_image_get(self, image_hash):
+        cur = self.fs.find({'hash': image_hash}, limit=1)
+        async for filedata in cur:
+            image_data = await filedata.read()
 
-    async def raw_image_get(self, img_hash):
-        img = await self.image_db.find_one({'type': 'attachment',
-                                            'hash': img_hash})
-        if not img:
-            return
+            imageblock = {**{
+                'data': image_data
+            }, **filedata.metadata}
 
-        # TODO: remove hardcoding
-        meta = img['metadata']
-        meta['url'] = f'https://litecord.adryd.com/images/{img_hash}/{meta["filename"]}'
-        return img
+            # TODO: remove hardcoding
+            imageblock.update({
+                'url': f'https://litecord.adryd.com/images/{image_hash}/{filedata.filename}'
+            })
 
-    def force_get_cache(self, img_hash):
-        img = self.cache.get(img_hash)
-        if not img:
-            return
-
-        # TODO: remove hardcoding
-        meta = img['metadata']
-        meta['url'] = f'https://litecord.adryd.com/images/{img_hash}/{meta["filename"]}'
-        return img
+            return imageblock
+        return
 
     async def image_retrieve(self, img_hash):
         img = await self.raw_image_get(img_hash)

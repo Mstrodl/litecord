@@ -49,7 +49,7 @@ class ImageEndpoint:
         image_hash = request.match_info['image_hash']
 
         log.info('[get_image] requesting hash %s', image_hash)
-        image = await self.server.images.raw_image_get(image_hash)
+        image = await self.images.raw_image_get(image_hash)
         if not image:
             return _err('image not found', status_code=404)
 
