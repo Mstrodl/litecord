@@ -1,6 +1,7 @@
 import logging
 import time
 import io
+import json
 
 from aiohttp import web
 from voluptuous import Schema, Optional, All, Length, Range
@@ -139,17 +140,14 @@ class ChannelsEndpoint:
 
         while not reader.at_eof():
             part = await reader.next()
-            # fuCKING HELL
-            log.debug(part._content)
 
+            part_data = await part.form()
+            log.debug(part_data)
             try:
                 log.info('try json')
-                if payload:
-                    log.info('We already got payload.')
-                    raise Exception('payload already exists')
-                payload = await part.json()
+                payload = json.loads(part_data)
                 log.info('success json, %r', payload)
-            except:
+            except json.JSONDecodeError:
                 log.exception('oof on json, reading attachment')
                 attachment, total = await self.read_attach(part)
                 log.info('[getattach] attachment = %r, total = %d',
