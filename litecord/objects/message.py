@@ -1,10 +1,11 @@
 import datetime
 import logging
 import re
+import asyncio
 
 from .base import LitecordObject
 from .member import Member
-from ..snowflake import snowflake_time
+#from ..snowflake import snowflake_time
 from ..utils import dt_to_json
 from ..enums import MessageType
 
@@ -92,7 +93,9 @@ class Message(LitecordObject):
         # load attachment data
         attachments = raw.get('attachments', [])
         for ihash in attachments:
-            image = await self.server.image.image_retrieve(ihash)
+            image = asyncio.ensure_future(
+                self.server.image.image_retrieve(ihash)
+            )
             if not image:
                 continue
 
