@@ -152,6 +152,7 @@ class ChannelsEndpoint:
         try:
             payload = await request.json()
         except:
+            log.exception('err')
             return _err("error parsing")
 
         try:
