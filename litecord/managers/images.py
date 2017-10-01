@@ -42,7 +42,7 @@ class Images:
     async def _unload(self):
         del self.cache
 
-    async def raw_add_image(self, data, img_type='avatar', metadata=None):
+    async def raw_add_image(self, data, img_type='avatar', metadata={}):
         """Add an image.
 
         Returns a string, representing the image hash.
@@ -93,8 +93,12 @@ class Images:
             return None
 
     async def raw_image_get(self, img_hash):
-        return await self.image_db.find_one({'type': 'attachment',
-                                             'hash': img_hash})
+        img = await self.image_db.find_one({'type': 'attachment',
+                                            'hash': img_hash})
+        # TODO: remove hardcoding
+        meta = img['metadata']
+        meta['url'] = f'https://litecord.adryd.com/images/{img_hash}'
+        return img
 
     async def image_retrieve(self, img_hash):
         img = await self.raw_image_get(img_hash)
