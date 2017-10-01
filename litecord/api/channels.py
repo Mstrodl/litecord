@@ -106,7 +106,7 @@ class ChannelsEndpoint:
         self.server.loop.create_task(self.server.presence.typing_start(user.id, channel.id))
         return web.Response(status=204)
 
-    async def read_attachment(self, part):
+    async def read_attach(self, part):
         log.info('reading attachment from part')
         attachment = io.BytesIO()
         total = 0
