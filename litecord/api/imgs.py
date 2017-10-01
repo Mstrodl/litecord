@@ -53,4 +53,6 @@ class ImageEndpoint:
         if not image:
             return _err('image not found', status_code=404)
 
+        log.info('image: %r', image)
+        log.info('decode: %r', base64.b64decode(image['data']))
         return web.Response(body=image['data'])
