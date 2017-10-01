@@ -192,7 +192,6 @@ class ChannelsEndpoint:
 
         if attachment:
             # do image shit here
-            data = attachment['data']
             data = attachment[1]
             image_hash = await self.server.images.raw_add_image(
                 data, 'attachment',
