@@ -608,7 +608,7 @@ class GuildManager:
             The new member object.
         """
 
-        raw_guild = guild._data
+        raw_guild = guild._raw
 
         if str(user.id) in guild.bans:
             raise Exception('User is banned')
