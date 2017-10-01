@@ -610,10 +610,10 @@ class GuildManager:
 
         raw_guild = guild._raw
 
-        if str(user.id) in guild.bans:
-            raise Exception('User is banned')
+        if user.id in guild.banned_ids:
+            raise RuntimeError('User is banned')
 
-        raw_guild['members'].append(str(user.id))
+        raw_guild['members'].append(user.id)
 
         result = await self.guild_coll.replace_one({'guild_id': guild.id},
                                                    raw_guild)
