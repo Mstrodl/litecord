@@ -74,7 +74,7 @@ class Images:
         image = {
             'type': img_type,
             'hash': data_hash,
-            'data': encoded_data.decode(),
+            'data': dec_data,
             'metadata': metadata,
         }
 

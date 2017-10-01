@@ -40,8 +40,7 @@ class ImageEndpoint:
         if image is None:
             return _err('image not found')
 
-        raw = base64.b64decode(image)
-        return web.Response(body=raw)
+        return web.Response(body=image)
 
     async def h_get_image(self, request):
         """`GET /images/{image_hash}/{name}.{ext}`.
@@ -54,5 +53,4 @@ class ImageEndpoint:
         if not image:
             return _err('image not found', status_code=404)
 
-        raw = base64.b64decode(image['data'])
-        return web.Response(body=raw)
+        return web.Response(body=image['data'])
