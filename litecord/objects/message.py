@@ -98,7 +98,7 @@ class Message(LitecordObject):
                 if not image:
                     return
 
-                self.attachment.append(Attachment(image))
+                self.attachments.append(Attachment(image))
 
             asyncio.ensure_future(_updater())
 
