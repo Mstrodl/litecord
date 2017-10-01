@@ -109,7 +109,7 @@ class ChannelsEndpoint:
     async def get_attachments(self, request) -> dict:
         """Get a single attachment from a request."""
         try:
-            reader = await request.mutipart()
+            reader = await request.multipart()
         except AttributeError:
             log.info('failed to multipart')
             return None, None
