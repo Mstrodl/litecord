@@ -195,7 +195,7 @@ class ChannelsEndpoint:
                     'size': attachment[2],
                 }
             )
-            _data['passon'] = [block]
+            _data['attach_passon'] = [block]
             _data['attachments'] = [image_hash]
 
         new_message = await self.guild_man.new_message(channel, user, _data)

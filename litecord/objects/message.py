@@ -97,9 +97,10 @@ class Message(LitecordObject):
                 self.attachments.append(Attachment(image_data))
         else:
             attachments = raw.get('attachments', [])
-            for ihash in attachments:
+            for ifname, ihash in attachments:
                 async def _updater():
-                    image = await self.server.images.raw_image_get(ihash)
+                    image = await self.server.images.raw_image_get(ifname,
+                                                                   ihash)
                     if not image:
                         return
 
@@ -130,7 +131,7 @@ class Message(LitecordObject):
             'edited_timestamp': dt_to_json(self.edited_at),
 
             'content': str(self.content),
-            'attachments': [a.id for a in self.attachments],
+            'attachments': [(a.filename, a.id) for a in self.attachments],
             'embeds': self.embeds,
 
             'pinned': self.pinned,
