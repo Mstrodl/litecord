@@ -111,21 +111,29 @@ class ChannelsEndpoint:
         try:
             reader = await request.mutipart()
         except AttributeError:
-            return None
+            return None, None
 
-        sent_attachment = await reader.next()
-        attachment = io.BytesIO()
+        payload = None
+        attachment = None
 
-        total = 0
-        while True:
-            chunk = await sent_attachment.read_chunk()
-            if not chunk:
-                break
-            total += len(chunk)
-            attachment.write(chunk)
+        try:
+            payload = await reader.json()
+        except:
+            log.exception('oof')
+
+            sent_attachment = await reader.next()
+            attachment = io.BytesIO()
+
+            total = 0
+            while True:
+                chunk = await sent_attachment.read_chunk()
+                if not chunk:
+                    break
+                total += len(chunk)
+                attachment.write(chunk)
 
         if total < 2:
-            return None
+            return None, payload
 
         return {
             'meta': {
@@ -133,7 +141,7 @@ class ChannelsEndpoint:
                 'size': total,
             },
             'data': attachment,
-        }
+        }, payload
 
     @auth_route
     async def h_post_message(self, request, user):
@@ -152,19 +160,17 @@ class ChannelsEndpoint:
         if user.id not in channel.guild.members:
             return _err(errno=40001)
 
-        try:
-            payload = await request.json()
-        except:
-            log.exception('err')
-            return _err("error parsing")
-
-        try:
-            content = str(payload['content'])
-        except:
-            return _err('no useful content provided')
-
         # check attachments
-        attachment = await self.get_attachments(request)
+        attachment, payload = await self.get_attachments(request)
+
+        if not attachment:
+            try:
+                payload = await request.json()
+            except:
+                log.exception('err')
+                return _err("error parsing")
+
+        content = str(payload['content'])
 
         if len(content) < 1 and (not attachment):
             return _err(errno=50006)
