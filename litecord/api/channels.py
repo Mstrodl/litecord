@@ -2,6 +2,7 @@ import logging
 import time
 import io
 import json
+import base64
 
 from aiohttp import web
 from voluptuous import Schema, Optional, All, Length, Range
@@ -138,7 +139,7 @@ class ChannelsEndpoint:
             else:
                 log.exception('got an attachment')
                 payload['raw_attachment'] = [part.filename,
-                                             io.BytesIO(part_data),
+                                             part_data,
                                              len(part_data)]
 
                 log.info('[getattach] attach = %r', payload['raw_attachment'])
@@ -193,8 +194,13 @@ class ChannelsEndpoint:
         if attachment:
             # do image shit here
             data = attachment[1]
+
+            extension = attachment[0].split('.')[-1]
+            b64_image = base64.b64encode(data)
+            b64data = f'data:image/{extension};base64,{b64_image}'
+
             image_hash = await self.server.images.raw_add_image(
-                data, 'attachment',
+                b64data, 'attachment',
                 {
                     'filename': attachment[0],
                     'size': attachment[2],
