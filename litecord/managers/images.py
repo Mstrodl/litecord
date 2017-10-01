@@ -65,6 +65,7 @@ class Images:
         try:
             dec_data = base64.b64decode(encoded_data)
         except:
+            log.exception('error decoding base64')
             raise ImageError('Error decoding Base64 data')
 
         data_hash = hashlib.sha256(dec_data).hexdigest()
@@ -73,7 +74,7 @@ class Images:
         image = {
             'type': img_type,
             'hash': data_hash,
-            'data': encoded_data,
+            'data': encoded_data.decode(),
             'metadata': metadata,
         }
 
