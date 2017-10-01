@@ -165,7 +165,7 @@ class Message(LitecordObject):
             'mentions': mentions,
             'mention_roles': mention_roles,
 
-            'attachments': self.attachments,
+            'attachments': [a.as_json for a in self.attachments],
             'embeds': self.embeds,
             'reactions': reactions,
             'pinned': self.pinned,
