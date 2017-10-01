@@ -153,7 +153,7 @@ class ChannelsEndpoint:
                 try:
                     json_data = json.loads(part_data)
                 except:
-                    json_data = str(part_data)
+                    json_data = part_data.decode()
 
                 payload[part.name] = json_data
                 log.info('key %r -> data %r', part.name, json_data)
@@ -200,7 +200,7 @@ class ChannelsEndpoint:
         # check attachments
         attachment, payload = await self.get_attachments(request)
 
-        log.debug('[attach:payload] %r %r', str(attachment)[:10], payload)
+        log.debug('[attach] a=%r p=%r', str(attachment)[:10], payload)
         if not attachment:
             try:
                 payload = await request.json()
