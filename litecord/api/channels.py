@@ -110,7 +110,7 @@ class ChannelsEndpoint:
         """Get a single attachment from a request."""
         try:
             reader = await request.multipart()
-        except AttributeError:
+        except AssertionError:
             log.info('failed to multipart')
             return None, None
 
