@@ -91,16 +91,21 @@ class Message(LitecordObject):
                                                         "%Y-%m-%dT%H:%M:%S.%f")
 
         # load attachment data
-        attachments = raw.get('attachments', [])
-        for ihash in attachments:
-            async def _updater():
-                image = await self.server.images.raw_image_get(ihash)
-                if not image:
-                    return
+        passon = raw.get('attach_passon', None)
+        if passon:
+            for image_data in passon:
+                self.attachments.append(Attachment(image_data))
+        else:
+            attachments = raw.get('attachments', [])
+            for ihash in attachments:
+                async def _updater():
+                    image = await self.server.images.raw_image_get(ihash)
+                    if not image:
+                        return
 
-                self.attachments.append(Attachment(image))
+                    self.attachments.append(Attachment(image))
 
-            asyncio.ensure_future(_updater())
+                asyncio.ensure_future(_updater())
 
     def __repr__(self):
         return f'<Message id={self.id} pinned={self.pinned} author={self.author}>'

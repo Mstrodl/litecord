@@ -194,13 +194,14 @@ class ChannelsEndpoint:
             b64_image = base64.b64encode(data)
             b64data = f'data:image/{extension};base64,{b64_image}'
 
-            image_hash = await self.server.images.raw_add_image(
+            image_hash, block = await self.server.images.raw_add_image(
                 b64data, 'attachment',
                 {
                     'filename': attachment[0],
                     'size': attachment[2],
                 }
             )
+            _data['passon'] = [block]
             _data['attachments'] = [image_hash]
 
         new_message = await self.guild_man.new_message(channel, user, _data)
