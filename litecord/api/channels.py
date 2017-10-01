@@ -150,8 +150,13 @@ class ChannelsEndpoint:
             log.debug('part_data: %r', str(part_data)[:200])
 
             if not part.filename:
-                payload[part.name] = part_data
-                log.info('key %r -> data %r', part.name, part_data)
+                try:
+                    json_data = json.loads(part_data)
+                except:
+                    json_data = str(part_data)
+
+                payload[part.name] = json_data
+                log.info('key %r -> data %r', part.name, json_data)
             else:
                 log.exception('got an attachment')
                 attachment = io.BytesIO(part_data)
