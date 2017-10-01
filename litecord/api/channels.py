@@ -137,10 +137,10 @@ class ChannelsEndpoint:
         attachment_metadata = {}
         total = 0
 
-        while True:
+        while not reader.at_eof():
             part = await reader.next()
-            if not part:
-                break
+            # fuCKING HELL
+            log.debug(part._content)
 
             try:
                 log.info('try json')
