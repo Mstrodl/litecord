@@ -613,7 +613,7 @@ class GuildManager:
         if user.id in guild.banned_ids:
             raise RuntimeError('User is banned')
 
-        raw_guild['members'].append(user.id)
+        raw_guild['member_ids'].append(user.id)
 
         result = await self.guild_coll.replace_one({'guild_id': guild.id},
                                                    raw_guild)
@@ -634,7 +634,7 @@ class GuildManager:
 
         new_member = guild.members.get(user.id)
         if new_member is None:
-            raise Exception('New member as raw not found')
+            raise RuntimeError('New member as raw not found')
 
         to_add = {'guild_id': str(guild.id)}
         payload = {**new_member.as_json, **to_add}
