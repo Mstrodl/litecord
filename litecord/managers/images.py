@@ -53,21 +53,12 @@ class Images:
         if img_type == 'avatar' and mimetype[0] not in AVATAR_MIMETYPES:
             raise ImageError(f'Invalid mimetype {mimetype!r}')
 
-        # check for base64 validity of data
-        try:
-            raw_bytes = base64.b64decode(encoded_str)
-        except:
-            raise ImageError('Error decoding base64 data')
-
-        img_hash = hashlib.sha256(raw_bytes).hexdigest()
+        img_hash = hashlib.sha256(image_data).hexdigest()
         log.info('got %d bytes to insert, hash:%s',
-                 len(raw_bytes), img_hash)
+                 len(image_data), img_hash)
 
         image_metadata = {**{
-            # img_hash is a str
             'hash': img_hash,
-
-            # img_type is also a str
             'type': img_type,
 
             'mimetype': mimetype[0],
@@ -77,7 +68,7 @@ class Images:
 
         await self.fs.upload_from_stream(
             filename=image_metadata['filename'],
-            source=raw_bytes,
+            source=image_data,
             metadata=image_metadata
         )
 

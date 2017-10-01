@@ -1,8 +1,6 @@
 import logging
 import time
-import io
 import json
-import base64
 
 from aiohttp import web
 from voluptuous import Schema, Optional, All, Length, Range
@@ -190,12 +188,8 @@ class ChannelsEndpoint:
             # do image shit here
             data = attachment[1]
 
-            extension = attachment[0].split('.')[-1]
-            b64_image = base64.b64encode(data)
-            b64data = f'data:image/{extension};base64,{b64_image}'
-
             image_hash, block = await self.server.images.raw_add_image(
-                b64data, 'attachment',
+                data, 'attachment',
                 {
                     'filename': attachment[0],
                     'size': attachment[2],
