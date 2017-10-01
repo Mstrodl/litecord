@@ -137,6 +137,9 @@ class ChannelsEndpoint:
 
         while True:
             part = await reader.next()
+            if not part:
+                break
+
             try:
                 log.info('try json')
                 payload = await part.json()
