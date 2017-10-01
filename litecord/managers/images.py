@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 AVATAR_MIMETYPES = [
     'image/jpeg', 'image/jpg', 'image/png',
-    'image/gif'
+    'image/gif', 'image/txt',
 ]
 
 
