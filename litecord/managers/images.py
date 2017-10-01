@@ -92,9 +92,12 @@ class Images:
         except:
             return None
 
+    async def raw_image_get(self, img_hash):
+        return await self.image_db.find_one({'type': 'attachment',
+                                             'hash': img_hash})
+
     async def image_retrieve(self, img_hash):
-        img = await self.image_db.find_one({'type': 'attachment',
-                                            'hash': img_hash})
+        img = await self.raw_image_get(img_hash)
         try:
             return img.get('data')
         except:

@@ -94,7 +94,7 @@ class Message(LitecordObject):
         attachments = raw.get('attachments', [])
         for ihash in attachments:
             async def _updater():
-                image = await self.server.images.image_retrieve(ihash)
+                image = await self.server.images.raw_image_get(ihash)
                 if not image:
                     return
 
