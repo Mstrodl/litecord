@@ -93,14 +93,14 @@ class Message(LitecordObject):
         # load attachment data
         attachments = raw.get('attachments', [])
         for ihash in attachments:
-            image = asyncio.ensure_future(
-                self.server.images.image_retrieve(ihash)
-            )
-            if not image:
-                continue
+            async def _updater():
+                image = await self.server.images.image_retrieve(ihash)
+                if not image:
+                    return
 
-            # TODO THIS
-            self.attachments.append(Attachment(image))
+                self.attachment.append(Attachment(image))
+
+            asyncio.ensure_future(_updater())
 
     def __repr__(self):
         return f'<Message id={self.id} pinned={self.pinned} author={self.author}>'
