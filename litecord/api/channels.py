@@ -107,9 +107,10 @@ class ChannelsEndpoint:
         self.server.loop.create_task(self.server.presence.typing_start(user.id, channel.id))
         return web.Response(status=204)
 
-    async def read_attach(self, part):
+    async def read_attach(self, attachment, part):
         log.info('reading attachment from part')
-        attachment = io.BytesIO()
+        if not attachment:
+            attachment = io.BytesIO()
         total = 0
 
         while True:
@@ -148,9 +149,10 @@ class ChannelsEndpoint:
                 log.info('try json')
                 payload = json.loads(part_data)
                 log.info('success json, %r', str(payload)[:200])
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, UnicodeDecodeError):
                 log.exception('oof on json, reading attachment')
-                attachment, total = await self.read_attach(part)
+                attachment, total = await self.read_attach(attachment, part)
+
                 log.info('[getattach] attachment = %r, total = %d',
                          str(attachment)[:200], total)
                 if attachment:
