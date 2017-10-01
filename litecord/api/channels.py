@@ -141,6 +141,8 @@ class ChannelsEndpoint:
 
         while not reader.at_eof():
             part = await reader.next()
+            if not part:
+                break
 
             part_data = await part.read()
 
@@ -150,11 +152,13 @@ class ChannelsEndpoint:
                 payload = json.loads(part_data)
                 log.info('success json, %r', str(payload)[:200])
             except (json.JSONDecodeError, UnicodeDecodeError):
-                log.exception('oof on json, reading attachment')
-                attachment, total = await self.read_attach(attachment, part)
+                log.exception('oof on json, understanding as an attachment')
+                # attachment, total = await self.read_attach(attachment, part)
+                attachment = io.StringIO(part_data)
+                total += len(part_data)
 
                 log.info('[getattach] attachment = %r, total = %d',
-                         str(attachment)[:200], total)
+                         attachment, total)
                 if attachment:
                     attachment_metadata = {
                         'filename': part.filename,
