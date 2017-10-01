@@ -45,12 +45,11 @@ class Images:
         del self.cache
 
     async def raw_add_image(self, image_data, img_type='avatar', metadata={}):
-        try:
-            encoded_str, mimetype = extract_uri(image_data)
-        except ImageError as err:
-            raise err
+        # I hate myself for this
+        mimetype = metadata['filename'].split('.')[-1]
+        mimetype = f'image/{mimetype}'
 
-        if img_type == 'avatar' and mimetype[0] not in AVATAR_MIMETYPES:
+        if img_type == 'avatar' and mimetype not in AVATAR_MIMETYPES:
             raise ImageError(f'Invalid mimetype {mimetype!r}')
 
         img_hash = hashlib.sha256(image_data).hexdigest()
@@ -62,8 +61,6 @@ class Images:
             'type': img_type,
 
             'mimetype': mimetype[0],
-            'extension': mimetype[1],
-
         }, **metadata}
 
         await self.fs.upload_from_stream(
