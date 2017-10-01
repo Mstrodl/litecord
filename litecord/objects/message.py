@@ -94,7 +94,7 @@ class Message(LitecordObject):
         attachments = raw.get('attachments', [])
         for ihash in attachments:
             image = asyncio.ensure_future(
-                self.server.image.image_retrieve(ihash)
+                self.server.images.image_retrieve(ihash)
             )
             if not image:
                 continue
