@@ -28,7 +28,7 @@ class PresenceManager:
             log.warning(f"Presence not found for {user_id}")
             return None
 
-    def get_glpresence(self, user_id):
+    def get_glpresence(self, user_id: int):
         return self.global_presences.get(user_id)
 
     def offline(self):

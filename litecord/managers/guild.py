@@ -639,6 +639,17 @@ class GuildManager:
         to_add = {'guild_id': str(guild.id)}
         payload = {**new_member.as_json, **to_add}
 
+        # TODO: remove glpresence altogether
+        # and create presences on-demand.
+        # When sharding, we get the guild id, and the shard
+        # it should represent, get the presence from there
+        # and then copy to the new guild.
+        current = self.server.presence.get_glpresence(user.id)
+        await self.server.presence.status_update(self, user, current)
+
+        # dispatch events
+        # if these fail, expect weird issues related to the client
+        # and the new guild.
         await guild.dispatch('GUILD_MEMBER_ADD', payload)
         await new_member.dispatch('GUILD_CREATE', guild.as_json)
         await user.dispatch('USER_GUILD_SETTINGS_UPDATE',

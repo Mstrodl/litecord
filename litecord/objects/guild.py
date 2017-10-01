@@ -203,11 +203,13 @@ class Guild(LitecordObject):
     def viewers(self):
         """Yield all members that are viewers of this guild.
 
-        Keep in mind that :attr:`Guild.viewers` is different from :py:meth:`Guild.online_members`.
+        Keep in mind that :attr:`Guild.viewers` is different
+        from :py:meth:`Guild.online_members`.
 
-        Members are viewers automatically, but if they are Atomic-Discord clients,
-        they only *are* viewers if they send a OP 12 Guild Sync(:py:meth:`Connection.guild_sync_handler`)
-        to the gateway.
+        Members are viewers automatically, but if they
+        are Atomic-Discord clients,
+        they only *are* viewers if they send a OP 12 Guild Sync
+        (:py:meth:`Connection.guild_sync_handler`) to the gateway.
         """
         for member in self.members.values():
             try:
@@ -225,9 +227,16 @@ class Guild(LitecordObject):
 
     @property
     def presences(self):
-        """Returns a list of :class:`Presence` objects for all online members."""
-        return [self.server.presence.get_presence(self.id, member.id) \
-            for member in self.online_members]
+        """Returns a list of :class:`Presence` objects
+        for all online members."""
+        presences = []
+
+        for member in self.online_members:
+            presence = self.server.presence.get_presence(self.id, member.id)
+            if presence:
+                presences.append(presence)
+        
+        return presences
 
     async def _dispatch(self, evt_name, evt_data) -> int:
         """Dispatch an event to all guild viewers.
