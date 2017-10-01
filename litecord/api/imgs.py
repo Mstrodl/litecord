@@ -47,9 +47,13 @@ class ImageEndpoint:
         Fetch an image from the server.
         """
         image_hash = request.match_info['image_hash']
+        i_name = request.match_info['name']
+        i_ext = request.match_info['ext']
+        i_fname = f'{i_name}.{i_ext}'
 
-        log.info('[get_image] requesting hash %s', image_hash)
-        image = await self.images.raw_image_get(image_hash)
+        log.info('[get_image] requesting filename %s hash %s',
+                 i_fname, image_hash)
+        image = await self.images.raw_image_get(i_fname, image_hash)
         if not image:
             return _err('image not found', status_code=404)
 

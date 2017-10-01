@@ -83,13 +83,15 @@ class Images:
 
         return img_hash, image_metadata
 
-    async def raw_image_get(self, image_hash):
+    async def raw_image_get(self, image_filename, image_hash):
         log.debug('[image:raw_get] %s', image_hash)
 
-        cur = self.fs.find({'metadata': {'hash': image_hash}}, limit=1)
+        cur = self.fs.find({'filename': image_filename})
         async for filedata in cur:
-            log.info('[get_image] %s -> True', image_hash)
+            if filedata.metadata['hash'] != image_hash:
+                continue
 
+            log.info('[get_image] %s -> True', image_hash)
             image_data = await filedata.read()
 
             imageblock = {**{
