@@ -1,6 +1,6 @@
 import logging
-import base64
 import hashlib
+import io
 
 import motor.motor_asyncio as motor
 
@@ -65,7 +65,7 @@ class Images:
 
         await self.fs.upload_from_stream(
             filename=image_metadata['filename'],
-            source=image_data,
+            source=io.BytesIO(image_data),
             metadata=image_metadata
         )
 
