@@ -111,13 +111,16 @@ class ChannelsEndpoint:
         try:
             reader = await request.mutipart()
         except AttributeError:
+            log.info('failed to multipart')
             return None, None
 
         payload = None
         attachment = None
 
         try:
+            log.info('trying to json')
             payload = await reader.json()
+            log.info('success json')
         except:
             log.exception('oof')
 
@@ -132,9 +135,13 @@ class ChannelsEndpoint:
                 total += len(chunk)
                 attachment.write(chunk)
 
+            log.info('got attachment')
+
         if total < 2:
+            log.info('not enough bytes in attachment')
             return None, payload
 
+        log.info('got %d bytes', total)
         return {
             'meta': {
                 'filename': sent_attachment.filename,
@@ -163,6 +170,7 @@ class ChannelsEndpoint:
         # check attachments
         attachment, payload = await self.get_attachments(request)
 
+        log.debug('[attach:payload] %r %r', attachment, payload)
         if not attachment:
             try:
                 payload = await request.json()
