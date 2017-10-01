@@ -116,7 +116,7 @@ class ChannelsEndpoint:
             chunk = await part.read_chunk()
             if not chunk:
                 break
-            log.debug('chunk: %r', chunk)
+            log.debug('chunk: %r', chunk[:1])
 
             total += len(chunk)
             attachment.write(chunk)
@@ -147,12 +147,12 @@ class ChannelsEndpoint:
             try:
                 log.info('try json')
                 payload = json.loads(part_data)
-                log.info('success json, %r', payload)
+                log.info('success json, %r', str(payload)[:200])
             except json.JSONDecodeError:
                 log.exception('oof on json, reading attachment')
                 attachment, total = await self.read_attach(part)
                 log.info('[getattach] attachment = %r, total = %d',
-                         attachment, total)
+                         str(attachment)[:200], total)
                 if attachment:
                     attachment_metadata = {
                         'filename': part.filename,
