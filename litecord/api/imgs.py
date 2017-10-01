@@ -17,7 +17,7 @@ class ImageEndpoint:
         _r = app.router
         _r.add_get('/images/avatars/{user_id}/{avatar_hash}.{img_format}', self.h_get_user_avatar)
         #_r.add_get('/embed/avatars/{default_id}.{img_format}', self.h_get_default_avatar)
-        _r.add_get('/images/{image_hash}', self.h_get_image)
+        _r.add_get('/images/{image_hash}/{filename}.{extension}', self.h_get_image)
 
     async def h_get_user_avatar(self, request):
         """`GET /images/avatars/{user_id}/{avatar_hash}.{img_format}`.
@@ -43,10 +43,11 @@ class ImageEndpoint:
         return web.Response(body=raw)
 
     async def h_get_image(self, request):
-        """`GET /images/{image_hash}`.
+        """`GET /images/{image_hash}/{name}.{ext}`.
         Fetch an image from the server.
         """
         image_hash = request.match_info['image_hash']
+
         image = await self.server.images.raw_image_get(image_hash)
         if not image:
             return _err('image not found', status_code=404)

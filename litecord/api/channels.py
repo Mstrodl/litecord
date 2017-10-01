@@ -126,7 +126,6 @@ class ChannelsEndpoint:
             part_data = await part.read()
             log.info('part name %r', part.name)
             log.info('part filename: %r', part.filename)
-            log.debug('part_data: %r', str(part_data)[:200])
 
             if not part.filename:
                 try:
@@ -137,12 +136,9 @@ class ChannelsEndpoint:
                 payload[part.name] = json_data
                 log.info('key %r -> data %r', part.name, json_data)
             else:
-                log.exception('got an attachment')
                 payload['raw_attachment'] = [part.filename,
                                              part_data,
                                              len(part_data)]
-
-                log.info('[getattach] attach = %r', payload['raw_attachment'])
 
         return payload
 
@@ -167,7 +163,6 @@ class ChannelsEndpoint:
         payload = await self.get_attachments(request)
         attachment = payload['raw_attachment']
 
-        log.debug('[attach] %r', payload)
         if not attachment:
             try:
                 payload = await request.json()

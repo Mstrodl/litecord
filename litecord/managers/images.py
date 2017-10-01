@@ -97,7 +97,7 @@ class Images:
                                             'hash': img_hash})
         # TODO: remove hardcoding
         meta = img['metadata']
-        meta['url'] = f'https://litecord.adryd.com/images/{img_hash}'
+        meta['url'] = f'https://litecord.adryd.com/images/{img_hash}/{meta["filename"]}'
         return img
 
     async def image_retrieve(self, img_hash):
