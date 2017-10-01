@@ -109,13 +109,14 @@ class ChannelsEndpoint:
 
     async def get_attachments(self, request) -> dict:
         """Get a single attachment from a request."""
+        payload = {'raw_attachment': None}
+
         try:
             reader = await request.multipart()
         except AssertionError:
             log.info('failed to multipart')
-            return None, None
+            return payload
 
-        payload = {'raw_attachment': None}
         while not reader.at_eof():
             part = await reader.next()
             if not part:
