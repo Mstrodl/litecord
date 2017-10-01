@@ -134,7 +134,7 @@ class ChannelsEndpoint:
             log.info('failed to multipart')
             return None, None
 
-        payload = None
+        payload = {}
         attachment = None
         attachment_metadata = {}
         total = 0
@@ -148,13 +148,12 @@ class ChannelsEndpoint:
             log.info('part name %r', part.name)
             log.info('part filename: %r', part.filename)
             log.debug('part_data: %r', str(part_data)[:200])
-            try:
-                log.info('try json')
-                payload = json.loads(part_data)
-                log.info('success json, %r', str(payload)[:200])
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                log.exception('oof on json, understanding as an attachment')
-                # attachment, total = await self.read_attach(attachment, part)
+
+            if not part.filename:
+                payload[part.name] = part_data
+                log.info('key %r -> data %r', part.name, part_data)
+            else:
+                log.exception('got an attachment')
                 attachment = io.BytesIO(part_data)
                 total += len(part_data)
 
@@ -219,6 +218,9 @@ class ChannelsEndpoint:
             'content': content,
             'nonce': payload.get('nonce'),
         }
+
+        if True:
+            return _err('fuck you')
 
         if attachment:
             # do image shit here
