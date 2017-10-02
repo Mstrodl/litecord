@@ -185,7 +185,6 @@ class Message(LitecordObject):
 class Attachment:
     """Attachment object."""
     def __init__(self, raw):
-        print('IMAGE RAW:', raw)
         self.id = raw['hash']
 
         self.filename = raw['filename']
