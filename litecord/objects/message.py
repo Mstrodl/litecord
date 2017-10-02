@@ -8,6 +8,7 @@ from .member import Member
 #from ..snowflake import snowflake_time
 from ..utils import dt_to_json
 from ..enums import MessageType
+from ..config import server_url
 
 log = logging.getLogger(__name__)
 
@@ -185,13 +186,14 @@ class Attachment:
     """Attachment object."""
     def __init__(self, raw):
         self.id = raw['hash']
-        self.data = raw['data']
-        self.filename = raw['metadata']['filename']
 
-        self.size = raw['metadata']['size']
-        self.url = raw['metadata']['url']
-        # TODO: proxy
-        self.proxy_url = raw['metadata']['url']
+        self.filename = raw['filename']
+        self.size = raw['size']
+
+        # actual url to the image
+        url = f'https://{server_url}/images/{raw["hash"]}/{raw["filename"]}'
+        self.url = url
+        self.proxy_url = url
 
         # hardcoded yes i know
         self.dimensions = (800, 600)
