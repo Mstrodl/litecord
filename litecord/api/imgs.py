@@ -60,4 +60,6 @@ class ImageEndpoint:
             return _err('image not found', status_code=404)
 
         log.info('image: %r %r', image, type(image['data']))
-        return web.Response(body=image['data'])
+        return web.Response(body=image['data'], headers={
+            'Content-Type': f'image/{i_ext}'  # TODO: don't do this
+        })
