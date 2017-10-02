@@ -3,6 +3,7 @@ import hashlib
 import io
 
 import motor.motor_asyncio as motor
+from PIL import Image
 
 from ..err import ImageError
 
@@ -56,10 +57,19 @@ class Images:
         log.info('got %d bytes to insert, hash:%s',
                  len(image_data), img_hash)
 
+        try:
+            pil_image = Image.open(io.BytesIO(image_data))
+            size = pil_image.size
+            log.info('got image size: (%d, %d)', *size)
+        except Exception:
+            # oh uh u died
+            log.exception('failed to process image, guess i\'ll just die (type: %s, metadata: %s):', img_type, metadata)
+            return None, None
+
         image_metadata = {**{
             'hash': img_hash,
             'type': img_type,
-
+            'dimensions': size,
             'mimetype': mimetype[0],
         }, **metadata}
 
@@ -97,7 +107,7 @@ class Images:
         return
 
     async def image_retrieve(self, img_hash):
-        img = await self.raw_image_get(img_hash)
+        img = await self.raw_image_get(img_hashØ)
         try:
             return img.get('data')
         except:

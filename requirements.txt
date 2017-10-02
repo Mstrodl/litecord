@@ -8,3 +8,4 @@ uvloop==0.8.0
 voluptuous==0.10.5
 itsdangerous==0.24
 pysha3==1.0.2
+Pillow=4.2.1

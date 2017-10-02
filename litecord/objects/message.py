@@ -185,6 +185,7 @@ class Message(LitecordObject):
 class Attachment:
     """Attachment object."""
     def __init__(self, raw):
+        print('IMAGE RAW:', raw)
         self.id = raw['hash']
 
         self.filename = raw['filename']
@@ -196,7 +197,7 @@ class Attachment:
         self.proxy_url = url
 
         # hardcoded yes i know
-        self.dimensions = (800, 600)
+        self.dimensions = raw['dimensions']
 
     @property
     def as_json(self):

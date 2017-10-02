@@ -195,6 +195,11 @@ class ChannelsEndpoint:
                     'size': attachment[2],
                 }
             )
+
+            if image_hash is None or block is None:
+                # failed to process
+                return web.Response(status=400, text='Failed to process image.')
+
             _data['attach_passon'] = [block]
             _data['attachments'] = [image_hash]
 
