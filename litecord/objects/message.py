@@ -209,8 +209,8 @@ class Attachment:
             'size': self.size,
 
             # oof
-            'height': self.dimensions[0],
-            'width': self.dimensions[1]
+            'width': self.dimensions[0],
+            'height': self.dimensions[1],
         }
 
         return raw
