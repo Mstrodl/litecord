@@ -41,8 +41,8 @@ class SettingsManager:
                 'render_embeds': True,
                 'message_display_compact': True,
                 'locale': 'en-US',
-                'inline_embed_media': False,
-                'inline_attachment_media': False,
+                'inline_embed_media': True,
+                'inline_attachment_media': True,
                 'guild_positions': [],
                 'friend_source_flags': {
                     'all': True,

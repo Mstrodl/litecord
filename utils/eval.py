@@ -6,8 +6,8 @@ import requests
 import json
 import readline
 
-API_BASE = 'http://0.0.0.0:8000'
-TOKEN = 'litecord_PuMsoEBrWuw6Kfat2rEVkup0nif9KeYtskUvRdZdQ4A5gPl3K1WAUekaUQZs0XMHCGKQP3ZPsUVhIVEo8TmUQQ'
+API_BASE = 'https://litecord.adryd.com'
+TOKEN = "MTYyODE5ODY2NjgyODUxMzI5.DLGjVA.pUwhsXRwDxROe5535dPXSsS8e9o"
 
 HEADERS = {
     'Authorization': f'Bot {TOKEN}',
