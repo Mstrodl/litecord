@@ -107,7 +107,7 @@ class Images:
         return
 
     async def image_retrieve(self, img_hash):
-        img = await self.raw_image_get(img_hashØ)
+        img = await self.raw_image_get(img_hash)
         try:
             return img.get('data')
         except:
