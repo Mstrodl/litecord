@@ -645,7 +645,7 @@ class GuildManager:
         # it should represent, get the presence from there
         # and then copy to the new guild.
         current = self.server.presence.get_glpresence(user.id)
-        await self.server.presence.status_update(self, user, current)
+        await self.server.presence.status_update(guild, user, current)
 
         # dispatch events
         # if these fail, expect weird issues related to the client
