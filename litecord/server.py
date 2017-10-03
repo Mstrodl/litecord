@@ -264,23 +264,27 @@ class LitecordServer:
         try:
             self.request_counter.pop(session_id)
         except KeyError:
+            log.debug('[r_conn] nothing on request_counter')
             pass
 
         try:
             state = delete(self.states, session_id=session_id)
         except KeyError:
+            log.debug('[r_conn] no state was found')
             return
 
         try:
             user_id = state.user.id
         except AttributeError:
+            log.debug('[r_conn] failed on state.user.id')
             return
 
         log.debug('Unlinking %r from uid=%d', state, user_id)
 
-        ref = list(self.connections[user_id])
+        ref = self.connections[user_id]
         for i, conn in enumerate(ref):
             if conn.state.session_id == session_id:
+                log.debug('Found a matching session_id, deleting')
                 del ref[i]
                 break
 
