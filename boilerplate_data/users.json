@@ -171,5 +171,22 @@
         "bot": false,
         "verified": true,
         "admin": false
+    },
+    {
+        "user_id": "237378015141691392",
+        "username": "tilda",
+        "email": "iamtheworst@programmer.net",
+        "premium": true,
+        "discriminator": "6969",
+        "password": {
+            "plain": "succmyrod",
+            "hash": "",
+            "salt": ""
+        },
+        "flags": 7,
+        "avatar": "",
+        "bot": false,
+        "verified": true,
+        "admin": true
     }
 ]
