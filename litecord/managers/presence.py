@@ -87,6 +87,9 @@ class PresenceManager:
         if new_status is None:
             new_status = {}
 
+        if isinstance(new_status, Presence):
+            new_status = Presence.game
+            
         if new_status.get('status') == 'invisible':
             new_status['status'] = 'offline'
         elif new_status.get('status') == 'afk':

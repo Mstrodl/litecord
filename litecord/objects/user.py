@@ -185,10 +185,11 @@ class Presence:
         self._update(guild, user, status)
 
     def _update(self, guild, user, status):
+
         _base = self.game
         if self.game is None:
             _base = default_game()
-        
+
         if status is None:
             status = {}
 

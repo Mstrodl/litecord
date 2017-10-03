@@ -84,7 +84,7 @@ class InvitesEndpoint:
 
             return _json(invite.as_json)
         except:
-            log.error(exc_info=True)
+            log.error('Error while using invite', exc_info=True)
             return _err('Error using the invite.')
 
     @auth_route
