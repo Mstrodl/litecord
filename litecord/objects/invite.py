@@ -143,7 +143,8 @@ class Invite(LitecordObject):
     def as_db(self):
         return {
             'code': self.code,
-            'channel_id': str(self.channel_id),
+            'channel_id': self.channel.id,
+            'inviter_id': self.inviter.id,
             'timestamp': self.iso_timestamp,
             'uses': self.uses,
             'temporary': self.temporary,
