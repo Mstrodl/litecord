@@ -1,6 +1,9 @@
 import datetime
+import logging
 
 from .base import LitecordObject
+
+log = logging.getLogger(__name__)
 
 
 class Invite(LitecordObject):
@@ -127,7 +130,8 @@ class Invite(LitecordObject):
 
     async def update(self):
         """Update an invite in the database."""
-        res = await self.server.invite_db.replace_one({'code': self.code}, self.as_db)
+        res = await self.server.invite_coll.replace_one(
+            {'code': self.code}, self.as_db)
         log.info(f"Updated {res.modified_count} invites")
 
     @property
