@@ -569,7 +569,7 @@ class LitecordServer:
             proto = 'wss'
 
         portstr = '' if len(ws) == 4 else f':{ws[1]}'
-        url = f'{proto}://{ws[2] if len(ws) == 3 else ws[0]}{portstr}'
+        url = f'{proto}://{ws[2] if len(ws) >= 3 else ws[0]}{portstr}'
         log.debug('Giving gateway URL: %r', url)
         return url
 
