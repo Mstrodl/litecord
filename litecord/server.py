@@ -568,7 +568,8 @@ class LitecordServer:
         if self.ssl_cxt is not None:
             proto = 'wss'
 
-        url = f'{proto}://{ws[2] if len(ws) == 3 else ws[0]}:{ws[1]}'
+        portstr = '' if len(ws) == 4 else f':{ws[1]}'
+        url = f'{proto}://{ws[2] if len(ws) == 3 else ws[0]}{portstr}'
         log.debug('Giving gateway URL: %r', url)
         return url
 
