@@ -631,6 +631,7 @@ class GuildManager:
         self.raw_members[guild.id][user.id] = raw_member
 
         guild = await self.reload_guild(guild)
+        # TODO: subscribe new member to reloaded guild
 
         new_member = guild.members.get(user.id)
         if new_member is None:
@@ -644,8 +645,11 @@ class GuildManager:
         # When sharding, we get the guild id, and the shard
         # it should represent, get the presence from there
         # and then copy to the new guild.
-        current = self.server.presence.get_glpresence(user.id)
-        await self.server.presence.status_update(guild, user, current)
+
+        # PresenceManager.create_presence will dispatch
+        # necessary PRESENCE_UPDATEs to the new user of the guild
+        # by using magic
+        await self.server.create_presence(guild, user)
 
         # dispatch events
         # if these fail, expect weird issues related to the client

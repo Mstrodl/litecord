@@ -3,6 +3,7 @@ import logging
 import time
 
 from ..objects import Presence
+from ..err import InconsistencyError
 
 log = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class PresenceManager:
         self.presences = collections.defaultdict(dict)
         self.global_presences = {}
 
-    def get_presence(self, guild_id, user_id):
+    def get_presence(self, guild_id: int, user_id: int) -> 'Presence':
         """Get a `Presence` object from a guild + user ID pair."""
         guild_id = int(guild_id)
         user_id = int(user_id)
@@ -31,16 +32,16 @@ class PresenceManager:
     def get_glpresence(self, user_id: int):
         return self.global_presences.get(user_id)
 
-    def offline(self):
-        """Return a presence dict object for offline users"""
+    def offline(self, status='offline'):
+        """Return a default status object for users"""
         return {
-            'status': 'offline',
+            'status': status,
             'type': 0,
             'name': None,
             'url': None,
         }
 
-    async def presence_count(self, guild_id):
+    async def presence_count(self, guild_id: int):
         """Count the approximate amount of presence objects for a guild.
 
         Parameters
@@ -58,9 +59,8 @@ class PresenceManager:
         guild_presences = self.presences.get(guild_id, {})
         return len(guild_presences.keys())
 
-    async def count_all(self):
+    async def count_all(self) -> int:
         """Return a count for all available presence objects."""
-
         return sum([await self.presence_count(guild_id) for guild_id in
                     self.server.guild_man.guilds.keys()])
 
@@ -121,6 +121,30 @@ class PresenceManager:
             # executing the task, making this event be sent
             # before READY
             await guild._dispatch('PRESENCE_UPDATE', user_presence.as_json)
+
+    async def create_presence(self, guild, user):
+        """Create a new presence for a user joining a new guild."""
+        status = {}
+
+        guilds = len(user.guilds)
+        if guilds > 0:
+            # To create our presence,
+            # we get the 1st guild a user is in
+            # NOTE: this might 'break' if the user
+            # is a bot AND it is sharded.
+
+            guild_pcopy = user.guilds[0]
+            presence = self.get_presence(guild_pcopy.id, user.id)
+            if not presence:
+                raise InconsistencyError('A guild the user is in '
+                                         'does not have a presence')
+            status = presence.game
+        else:
+            # handle the case where its a new user to litecord
+            # and the user doesnt have any fucking guilds
+            status = self.global_presences[user.id].game
+
+        await self.status_update(guild, user, status)
 
     async def global_update(self, conn, new_status=None):
         """Updates a user's status, globally.
