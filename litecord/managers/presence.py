@@ -126,14 +126,14 @@ class PresenceManager:
         """Create a new presence for a user joining a new guild."""
         status = {}
 
-        guilds = len(user.guilds)
+        guilds = sum(1 for g in user.guilds)
         if guilds > 0:
             # To create our presence,
             # we get the 1st guild a user is in
             # NOTE: this might 'break' if the user
             # is a bot AND it is sharded.
 
-            guild_pcopy = user.guilds[0]
+            guild_pcopy = next(user.guilds)
             presence = self.get_presence(guild_pcopy.id, user.id)
             if not presence:
                 raise InconsistencyError('A guild the user is in '

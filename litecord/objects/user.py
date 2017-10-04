@@ -70,6 +70,7 @@ class User(LitecordObject):
     @property
     def guilds(self):
         """Yield all guilds a user is in."""
+        # TODO: make this use AsyncIterator
         for guild in self.guild_man.all_guilds():
             if self.id in guild.member_ids:
                 yield guild
