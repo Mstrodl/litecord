@@ -54,6 +54,9 @@ class GuildManager:
         self.invites = []
         self.messages = []
 
+        # Semaphores
+        self.message_semaphore = asyncio.Semaphore(3)
+
     async def _load(self):
         await self.init()
 
@@ -196,16 +199,22 @@ class GuildManager:
             The created message.
         """
 
-        author = channel.guild.members.get(author_user.id)
-        message = Message(self.server, channel, author, raw)
-        result = await self.message_coll.insert_one(raw)
-        if not result.acknowledged:
-            log.warning('[mcoll:insert] not acknowledged')
+        await self.message_semaphore.acquire()
 
-        self.messages.append(message)
-        log.info(f'Adding message with id {message.id}')
+        try:
+            author = channel.guild.members.get(author_user.id)
+            message = Message(self.server, channel, author, raw)
+            result = await self.message_coll.insert_one(raw)
+            if not result.acknowledged:
+                log.warning('[mcoll:insert] not acknowledged')
 
-        await channel.dispatch('MESSAGE_CREATE', message.as_json)
+            self.messages.append(message)
+            log.info(f'Adding message with id {message.id}')
+
+            await channel.dispatch('MESSAGE_CREATE', message.as_json)
+        finally:
+            self.message_semaphore.release()
+
         return message
 
     async def delete_message(self, message) -> 'None':
