@@ -74,7 +74,7 @@ def pwd_hash(plain, salt):
     return hashlib.sha3_512(f'{plain}{salt}'.encode()).hexdigest()
 
 
-def _err(msg='', errno=None, status_code=403):
+def _err(msg='', errno=None, status_code=500):
     """Error object."""
     headers = {aiohttp.hdrs.CONTENT_TYPE: 'application/json'}
 

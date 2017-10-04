@@ -649,7 +649,7 @@ class GuildManager:
         # PresenceManager.create_presence will dispatch
         # necessary PRESENCE_UPDATEs to the new user of the guild
         # by using magic
-        await self.server.create_presence(guild, user)
+        await self.server.presence.create_presence(guild, user)
 
         # dispatch events
         # if these fail, expect weird issues related to the client
