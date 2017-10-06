@@ -85,8 +85,11 @@ class Guild(LitecordObject):
         self.channels = {}
         self.icons = {'splash': None}
 
+        # maybe?
+        self.invites = []
+
         # one day... one day.
-        self.emojis = [] 
+        self.emojis = []
 
         self._viewers = []
         self._update(raw)
@@ -235,7 +238,7 @@ class Guild(LitecordObject):
             presence = self.server.presence.get_presence(self.id, member.id)
             if presence:
                 presences.append(presence)
-        
+
         return presences
 
     async def _dispatch(self, evt_name, evt_data) -> int:
@@ -368,7 +371,7 @@ class Guild(LitecordObject):
             'member_count': self.member_count,
 
             'voice_states': [],
-            #'voice_states': self.voice_states,
+            # 'voice_states': self.voice_states,
 
             # arrays of stuff
             'members': self.iter_json(self.members),
@@ -390,13 +393,13 @@ class Guild(LitecordObject):
             'mobile_push': False,
             'message_notifications': 1,
             'channel_overrides': [],
-            #'channel_overrides': [
-            #    {
-            #        'channel_id': str(c.id),
-            #        'muted': False,
-            #        'message_notifications': 3,
-            #    } for c in self.text_channels
-            #],
+            # 'channel_overrides': [
+            #     {
+            #         'channel_id': str(c.id),
+            #         'muted': False,
+            #         'message_notifications': 3,
+            #     } for c in self.text_channels
+            # ],
         }
 
     @property

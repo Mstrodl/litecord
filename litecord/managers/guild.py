@@ -1014,6 +1014,7 @@ class GuildManager:
         invite = Invite(self.server, raw_invite)
         if invite.valid:
             self.invites.append(invite)
+            invite.guild.invites.append(invite)
 
         return invite
 
@@ -1266,6 +1267,7 @@ class GuildManager:
 
             if invite.valid:
                 self.invites.append(invite)
+                invite.guild.invites.append(invite)
                 valid_invites += 1
             else:
                 await self.delete_invite(invite)
