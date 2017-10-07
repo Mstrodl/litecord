@@ -135,10 +135,12 @@ class PresenceManager:
 
             guild_pcopy = next(user.guilds)
             presence = self.get_presence(guild_pcopy.id, user.id)
-            if not presence:
-                raise InconsistencyError('A guild the user is in '
-                                         'does not have a presence')
-            status = presence.game
+            status = None
+            if presence:
+                status = presence.game
+            else:
+                log.warning('Inconsistency: guild without presence')
+                status = self.offline('online')
         else:
             # handle the case where its a new user to litecord
             # and the user doesnt have any fucking guilds

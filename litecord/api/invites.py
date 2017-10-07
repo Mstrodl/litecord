@@ -83,9 +83,9 @@ class InvitesEndpoint:
                 return _err('Error adding to the guild')
 
             return _json(invite.as_json)
-        except:
-            log.error('Error while using invite', exc_info=True)
-            return _err('Error using the invite.')
+        except Exception as err:
+            log.exception('Error while using invite')
+            return _err(f'Error using the invite: {err!r}')
 
     @auth_route
     async def h_create_invite(self, request, user):
@@ -104,15 +104,16 @@ class InvitesEndpoint:
             payload = await request.json()
         except:
             return _err('error parsing JSON')
-        
+
         try:
             payload['max_age'] = int(payload['max_age'])
-        except (ValueError, TypeErrror):
+        except (ValueError, TypeError):
             return _err('invalid max_age type')
-        
+
         invite_payload = self.invite_create_schema(payload)
 
-        invite = await self.guild_man.create_invite(channel, user, invite_payload)
+        invite = await self.guild_man.create_invite(channel,
+                                                    user, invite_payload)
         if invite is None:
             return _err('error making invite')
 
