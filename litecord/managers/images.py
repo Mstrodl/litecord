@@ -45,7 +45,11 @@ class Images:
     async def _unload(self):
         del self.cache
 
-    async def raw_add_image(self, image_data, img_type='avatar', metadata={}):
+    async def raw_add_image(self, image_data, img_type='avatar',
+                            metadata=None):
+        if not metadata:
+            metadata = {}
+
         # I hate myself for this
         mimetype = metadata['filename'].split('.')[-1]
         mimetype = f'image/{mimetype}'
@@ -105,10 +109,3 @@ class Images:
 
         log.info('[get_image] %s -> False', image_hash)
         return
-
-    async def image_retrieve(self, img_hash):
-        img = await self.raw_image_get(img_hash)
-        try:
-            return img.get('data')
-        except:
-            return None
