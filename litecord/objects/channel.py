@@ -4,7 +4,6 @@ import logging
 import pymongo
 
 from .base import LitecordObject
-from ..enums import ChannelType
 from ..snowflake import _snowflake
 from .message import Message
 
@@ -32,8 +31,6 @@ class BaseChannel(LitecordObject):
     def __eq__(self, other):
         return isinstance(other, BaseChannel) and other.id == self.id
 
-    def _update(self, *args):
-        return None
 
 class BaseTextChannel(BaseChannel):
     """Base text channel."""
@@ -45,6 +42,7 @@ class BaseTextChannel(BaseChannel):
     def _update(self, raw):
         self._raw = raw
         self.name = raw['name']
+
 
 class BaseVoiceChannel(BaseChannel):
     """Base voice channel."""
@@ -60,9 +58,10 @@ class BaseVoiceChannel(BaseChannel):
         self.bitrate = raw['bitrate']
         self.user_limit = raw['user_limit']
 
+
 class BaseGuildChannel(BaseChannel):
     """Base guild channel.
-    
+
     Provides abstractions to work with channels
     that have members in a guild.
     """
@@ -84,9 +83,10 @@ class BaseGuildChannel(BaseChannel):
 
     @property
     def watchers(self):
-        """Yields all :class:`Member` who are online and can watch the channel."""
+        """Yields all :class:`Member` who are online
+        and can watch the channel."""
         for member in self.guild.online_members:
-            #if member.channel_perms[self.id].READ_MESSAGES: yield member
+            # if member.channel_perms[self.id].READ_MESSAGES: yield member
             yield member
 
     async def dispatch(self, evt_name, evt_data):
@@ -171,10 +171,11 @@ class TextGuildChannel(BaseGuildChannel):
             m_id = raw_message['message_id']
 
             m = self.guild_man.get_message(m_id)
-            if m is not None:
+            if m:
                 res.append(m)
             else:
-                m = Message(self.server, self, raw_message)
+                author = self.guild.members.get(raw_message['author_id'])
+                m = Message(self.server, self, author, raw_message)
                 self.guild_man.messages[m_id] = m
                 res.append(m)
 
@@ -336,7 +337,9 @@ class GuildCategory(BaseGuildChannel):
         self.server = server
         self._update(guild, raw)
 
-    def _update(self, guild, raw):
+    def _update(self, guild, parent, raw):
+        # We ignore parents
+        # since categories cant be inside categories
         super()._update(guild, None, raw)
         self.nsfw = raw.get('nsfw', False)
 
